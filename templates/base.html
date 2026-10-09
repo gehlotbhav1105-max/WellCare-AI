@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WellCare AI – Intelligent Personal Wellness System{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">WellCare <span class="brand-ai">AI</span></span>
+                    <span class="brand-tagline">Intelligent Wellness Prediction</span>
+                </div>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="{{ url_for('index') }}" class="nav-link {% if request.path == '/' %}active{% endif %}">
+                    <i class="fa-solid fa-house"></i> Home
+                </a>
+                <a href="{{ url_for('assessment') }}" class="nav-link {% if request.path == '/assessment' %}active{% endif %}">
+                    <i class="fa-solid fa-clipboard-check"></i> Assessment
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-chart-pie"></i> Analytics & ML
+                </a>
+                <a href="{{ url_for('history') }}" class="nav-link {% if request.path == '/history' %}active{% endif %}">
+                    <i class="fa-solid fa-clock-rotate-left"></i> History
+                </a>
+                <a href="{{ url_for('assessment') }}" class="btn btn-sm btn-primary nav-cta">
+                    <i class="fa-solid fa-play"></i> Start Checkup
+                </a>
+            </div>
+            <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Flash Messages Container -->
+    <div class="container flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'danger' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+                        <span>{{ message }}</span>
+                        <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="brand-icon-sm">
+                        <i class="fa-solid fa-heart-pulse"></i>
+                    </div>
+                    <h4>WellCare AI</h4>
+                    <p>An intelligent lifestyle monitoring and wellness prediction platform designed for proactive, multi-dimensional health optimization.</p>
+                </div>
+                <div class="footer-links">
+                    <h5>Quick Navigation</h5>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home Overview</a></li>
+                        <li><a href="{{ url_for('assessment') }}">Personal Assessment</a></li>
+                        <li><a href="{{ url_for('dashboard') }}">ML Analytics Dashboard</a></li>
+                        <li><a href="{{ url_for('history') }}">User Records History</a></li>
+                    </ul>
+                </div>
+                <div class="footer-tech">
+                    <h5>Academic Architecture</h5>
+                    <p>B.Tech AI/ML Project System powered by Python, Scikit-Learn (4 Multi-Classifiers), ColumnTransformers, Flask REST APIs, and ReportLab PDF Engine.</p>
+                </div>
+            </div>
+            
+            <div class="footer-disclaimer">
+                <div class="disclaimer-badge"><i class="fa-solid fa-shield-heart"></i> Educational Wellness Disclaimer</div>
+                <p>WellCare AI is an educational wellness-support system. Its results are general wellness indicators and should not be considered a medical diagnosis, clinical treatment, or substitute for professional healthcare advice.</p>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 WellCare AI System. Academic B.Tech AI & Data Science Project.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom Script -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

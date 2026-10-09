@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Wellness Assessment Result – {{ user.Name }} | WellCare AI{% endblock %}
+
+{% block content %}
+<div class="container py-8">
+    <!-- Header Summary -->
+    <div class="result-header text-center mb-8">
+        <span class="section-tag">AI Prediction & Report</span>
+        <h1 class="page-title">Personal Wellness Intelligence Profile</h1>
+        <p class="page-subtitle">Generated for <strong>{{ user.Name }}</strong> (ID: <code>{{ user.User_ID }}</code>) &bull; {{ user.Timestamp }}</p>
+    </div>
+
+    <!-- Main Results Grid -->
+    <div class="grid grid-3 mb-8">
+        <!-- Score Card -->
+        <div class="glass-card result-kpi-card text-center">
+            <span class="card-label">Deterministic Wellness Index</span>
+            <div class="score-radial-wrap">
+                <div class="score-radial {% if scoring.Wellness_Score >= 85 %}score-excellent{% elif scoring.Wellness_Score >= 70 %}score-good{% elif scoring.Wellness_Score >= 50 %}score-moderate{% else %}score-attention{% endif %}">
+                    <span class="score-value">{{ scoring.Wellness_Score }}</span>
+                    <span class="score-max">/ 100</span>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="badge {% if scoring.Wellness_Score >= 85 %}badge-success{% elif scoring.Wellness_Score >= 70 %}badge-teal{% elif scoring.Wellness_Score >= 50 %}badge-warning{% else %}badge-danger{% endif %} badge-lg">
+                    {{ scoring.Wellness_Category }}
+                </span>
+            </div>
+            <div class="score-subtext mt-3 text-muted">
+                BMI: <strong>{{ scoring.BMI }}</strong> ({{ scoring.BMI_Category }})
+            </div>
+        </div>
+
+        <!-- ML Model Prediction Card -->
+        <div class="glass-card result-kpi-card">
+            <div class="card-header-flex mb-4">
+                <span class="card-label">Machine Learning Classification</span>
+                <span class="badge badge-accent"><i class="fa-solid fa-brain"></i> AI Inference</span>
+            </div>
+            
+            <div class="ml-prediction-box mb-4">
+                <span class="ml-pred-label">Predicted Wellness Status:</span>
+                <h2 class="ml-pred-value text-teal">{{ prediction.Predicted_Category }}</h2>
+                <div class="confidence-bar-wrap">
+                    <div class="confidence-info">
+                        <span>Model Confidence:</span>
+                        <strong>{{ prediction.Confidence }}%</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: {{ prediction.Confidence }}%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ml-meta-info">
+                <p><i class="fa-solid fa-microchip"></i> <strong>Model:</strong> {{ prediction.Model_Name }}</p>
+                <p><i class="fa-solid fa-circle-info"></i> {{ prediction.ML_Message }}</p>
+            </div>
+        </div>
+
+        <!-- Download & Quick Actions Card -->
+        <div class="glass-card result-kpi-card download-action-card text-center">
+            <div class="report-icon-wrap">
+                <i class="fa-solid fa-file-pdf text-rose"></i>
+            </div>
+            <h3>Download Wellness Report</h3>
+            <p class="text-muted mb-4">Export an official ReportLab PDF document containing full factor breakdowns, charts, and recommendations.</p>
+            <a href="{{ url_for('download_report', user_id=user.User_ID) }}" class="btn btn-lg btn-rose w-100 mb-3">
+                <i class="fa-solid fa-download"></i> Download PDF Report
+            </a>
+            <div class="grid grid-2 gap-2">
+                <a href="{{ url_for('assessment') }}" class="btn btn-sm btn-outline">
+                    <i class="fa-solid fa-rotate-right"></i> Retake Form
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline">
+                    <i class="fa-solid fa-chart-pie"></i> View Analytics
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-2 mb-8">
+        <!-- Radar Chart of 5 Pillars -->
+        <div class="glass-card chart-card">
+            <div class="card-header-flex mb-4">
+                <div>
+                    <h3>5 Core Wellness Pillars</h3>
+                    <p class="text-muted">Normalized 0–100 percentage across primary lifestyle dimensions</p>
+                </div>
+                <span class="badge badge-teal">Radar Analysis</span>
+            </div>
+            <div class="chart-canvas-container">
+                <canvas id="pillarsRadarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Factor Ratings Breakdown Chart -->
+        <div class="glass-card chart-card">
+            <div class="card-header-flex mb-4">
+                <div>
+                    <h3>Lifestyle Factor Status Matrix</h3>
+                    <p class="text-muted">Optimal vs Moderate vs Needs Attention ratings</p>
+                </div>
+                <span class="badge badge-accent">Factor Matrix</span>
+            </div>
+            <div class="factor-list">
+                {% for factor, status in scoring.Factor_Ratings.items() %}
+                <div class="factor-row">
+                    <span class="factor-name">
+                        {% if factor == 'Sleep' %}<i class="fa-solid fa-bed text-teal"></i>
+                        {% elif factor == 'Physical Activity' %}<i class="fa-solid fa-person-walking text-sky"></i>
+                        {% elif factor == 'Hydration' %}<i class="fa-solid fa-glass-water text-sky"></i>
+                        {% elif factor == 'Stress Management' %}<i class="fa-solid fa-heart-pulse text-rose"></i>
+                        {% elif factor == 'Screen Time' %}<i class="fa-solid fa-laptop text-amber"></i>
+                        {% elif factor == 'Emotional Well-being' %}<i class="fa-solid fa-face-smile text-emerald"></i>
+                        {% else %}<i class="fa-solid fa-apple-whole text-indigo"></i>{% endif %}
+                        {{ factor }}
+                    </span>
+                    <span class="badge {% if status == 'Optimal' %}badge-success{% elif status == 'Moderate' %}badge-warning{% else %}badge-danger{% endif %}">
+                        {{ status }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Strengths vs Areas Needing Attention -->
+    <div class="grid grid-2 mb-8">
+        <div class="glass-card strengths-card">
+            <div class="card-header-flex mb-3">
+                <h3 class="text-success"><i class="fa-solid fa-circle-check"></i> Key Identified Strengths</h3>
+                <span class="badge badge-success">{{ scoring.Strengths|length }} Optimal</span>
+            </div>
+            <ul class="result-list">
+                {% for strength in scoring.Strengths %}
+                <li>
+                    <i class="fa-solid fa-check text-success"></i>
+                    <span><strong>{{ strength }}</strong> is operating within optimal wellness benchmarks.</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="glass-card attention-card">
+            <div class="card-header-flex mb-3">
+                <h3 class="text-danger"><i class="fa-solid fa-triangle-exclamation"></i> Priority Areas to Improve</h3>
+                <span class="badge badge-danger">{{ scoring.Improvements|length }} Focus Areas</span>
+            </div>
+            <ul class="result-list">
+                {% for imp in scoring.Improvements %}
+                <li>
+                    <i class="fa-solid fa-arrow-trend-up text-danger"></i>
+                    <span>Targeted lifestyle optimization recommended for <strong>{{ imp }}</strong>.</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Personalized Recommendations Engine -->
+    <div class="glass-card mb-8">
+        <div class="card-header-flex mb-6">
+            <div>
+                <h2><i class="fa-solid fa-lightbulb text-amber"></i> Tailored Lifestyle Recommendations</h2>
+                <p class="text-muted">Personalized rule-based actionable wellness guidance derived from your submitted metrics</p>
+            </div>
+            <span class="badge badge-primary">Smart Suggestions</span>
+        </div>
+
+        <div class="recommendations-grid">
+            {% for act in recommendations.priority_actions %}
+            <div class="rec-card priority-rec">
+                <div class="rec-badge-urgent"><i class="fa-solid fa-bolt"></i> High Priority Action</div>
+                <div class="rec-icon"><i class="fa-solid {{ act.icon }}"></i></div>
+                <div class="rec-body">
+                    <h4>{{ act.title }}</h4>
+                    <p>{{ act.action }}</p>
+                    <span class="rec-cat-tag">{{ act.category }}</span>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% for adv in recommendations.general_advice %}
+            <div class="rec-card general-rec">
+                <div class="rec-icon"><i class="fa-solid {{ adv.icon }}"></i></div>
+                <div class="rec-body">
+                    <h4>{{ adv.title }}</h4>
+                    <p>{{ adv.action }}</p>
+                    <span class="rec-cat-tag">{{ adv.category }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Educational Disclaimer Alert -->
+    <div class="alert alert-warning">
+        <i class="fa-solid fa-shield-heart"></i>
+        <div>
+            <strong>Educational & Wellness Notice:</strong>
+            {{ recommendations.disclaimer }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const pillarsData = {{ scoring.Pillars|tojson }};
+    
+    // Radar Chart for Pillars
+    const ctxRadar = document.getElementById('pillarsRadarChart').getContext('2d');
+    new Chart(ctxRadar, {
+        type: 'radar',
+        data: {
+            labels: ['Physical Fitness', 'Sleep & Rest', 'Hydration & Balance', 'Mental Wellness', 'Diet & Habits'],
+            datasets: [{
+                label: 'Score %',
+                data: [
+                    pillarsData.Physical || 0,
+                    pillarsData.Sleep || 0,
+                    pillarsData.Lifestyle || 0,
+                    pillarsData.Mental || 0,
+                    pillarsData.Habits || 0
+                ],
+                backgroundColor: 'rgba(13, 148, 136, 0.25)',
+                borderColor: '#0D9488',
+                pointBackgroundColor: '#0284C7',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#0D9488',
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(148, 163, 184, 0.2)' },
+                    grid: { color: 'rgba(148, 163, 184, 0.2)' },
+                    suggestedMin: 0,
+                    suggestedMax: 100,
+                    ticks: { stepSize: 20, display: false }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

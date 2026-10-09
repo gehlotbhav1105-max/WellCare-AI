@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+
+{% block title %}Wellness Assessment Form – WellCare AI{% endblock %}
+
+{% block content %}
+<div class="container py-8">
+    <div class="form-header text-center mb-8">
+        <span class="section-tag">Interactive Questionnaire</span>
+        <h1 class="page-title">Personal Wellness Assessment</h1>
+        <p class="page-subtitle">Enter your health and lifestyle metrics below to generate your multi-dimensional wellness prediction.</p>
+    </div>
+
+    <div class="assessment-layout">
+        <form action="{{ url_for('predict') }}" method="POST" id="assessmentForm" class="wellness-form">
+            
+            <!-- Section 1: Personal Demographics -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-step-badge">1</div>
+                    <div class="form-step-title">
+                        <h3>Personal Demographics</h3>
+                        <p>Basic identification and age parameters (PII is excluded from ML model features)</p>
+                    </div>
+                </div>
+                <div class="form-grid grid-2">
+                    <div class="form-group">
+                        <label for="User_ID">User ID <span class="required">*</span></label>
+                        <input type="text" id="User_ID" name="User_ID" class="form-control" value="{{ next_user_id }}" readonly required>
+                        <small class="form-hint">Auto-generated sequential user identifier</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Name">Full Name <span class="required">*</span></label>
+                        <input type="text" id="Name" name="Name" class="form-control" placeholder="e.g. John Doe" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Age">Age (Years) <span class="required">*</span></label>
+                        <input type="number" id="Age" name="Age" class="form-control" min="10" max="120" value="24" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Gender">Gender <span class="required">*</span></label>
+                        <select id="Gender" name="Gender" class="form-control" required>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other / Non-binary</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Physical Body & Fitness Metrics -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-step-badge">2</div>
+                    <div class="form-step-title">
+                        <h3>Physical Fitness & Anthropometrics</h3>
+                        <p>Body measurements, daily mobility volume, and workout consistency</p>
+                    </div>
+                </div>
+                <div class="form-grid grid-2">
+                    <div class="form-group">
+                        <label for="Height">Height (cm) <span class="required">*</span></label>
+                        <input type="number" id="Height" name="Height" class="form-control" min="50" max="250" step="0.5" value="175" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Weight">Weight (kg) <span class="required">*</span></label>
+                        <input type="number" id="Weight" name="Weight" class="form-control" min="20" max="300" step="0.5" value="70" required>
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <div class="slider-label-row">
+                            <label for="Steps">Daily Step Count <span class="required">*</span></label>
+                            <span class="slider-val" id="stepsVal">8,000 steps</span>
+                        </div>
+                        <input type="range" id="Steps" name="Steps" class="form-range" min="500" max="25000" step="250" value="8000" oninput="updateRangeLabel('Steps', 'stepsVal', ' steps')">
+                        <div class="range-ticks">
+                            <span>Sedentary (1k)</span>
+                            <span>Moderate (7.5k)</span>
+                            <span>Active (10k+)</span>
+                            <span>Athlete (20k+)</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Exercise_Duration">Daily Exercise Duration (Minutes) <span class="required">*</span></label>
+                        <input type="number" id="Exercise_Duration" name="Exercise_Duration" class="form-control" min="0" max="360" value="35" required>
+                        <small class="form-hint">Cardio, strength, yoga, or sports</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Exercise_Frequency">Exercise Days Per Week <span class="required">*</span></label>
+                        <select id="Exercise_Frequency" name="Exercise_Frequency" class="form-control" required>
+                            <option value="0">0 days (No structured exercise)</option>
+                            <option value="1">1 day per week</option>
+                            <option value="2">2 days per week</option>
+                            <option value="3" selected>3 days per week</option>
+                            <option value="4">4 days per week</option>
+                            <option value="5">5 days per week</option>
+                            <option value="6">6 days per week</option>
+                            <option value="7">7 days per week (Daily)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Lifestyle & Daily Habits -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-step-badge">3</div>
+                    <div class="form-step-title">
+                        <h3>Daily Lifestyle & Digital Habits</h3>
+                        <p>Sleep duration, hydration volume, screen exposure, and work-life balance</p>
+                    </div>
+                </div>
+                <div class="form-grid grid-2">
+                    <div class="form-group">
+                        <div class="slider-label-row">
+                            <label for="Sleep_Hours">Sleep Duration (Hours/Night) <span class="required">*</span></label>
+                            <span class="slider-val" id="sleepVal">7.5 hrs</span>
+                        </div>
+                        <input type="range" id="Sleep_Hours" name="Sleep_Hours" class="form-range" min="3.0" max="12.0" step="0.5" value="7.5" oninput="updateRangeLabel('Sleep_Hours', 'sleepVal', ' hrs')">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="slider-label-row">
+                            <label for="Water_Intake">Daily Water Intake (Liters) <span class="required">*</span></label>
+                            <span class="slider-val" id="waterVal">2.5 L</span>
+                        </div>
+                        <input type="range" id="Water_Intake" name="Water_Intake" class="form-range" min="0.5" max="8.0" step="0.1" value="2.5" oninput="updateRangeLabel('Water_Intake', 'waterVal', ' L')">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="slider-label-row">
+                            <label for="Screen_Time">Daily Screen Time (Hours) <span class="required">*</span></label>
+                            <span class="slider-val" id="screenVal">6.0 hrs</span>
+                        </div>
+                        <input type="range" id="Screen_Time" name="Screen_Time" class="form-range" min="1.0" max="16.0" step="0.5" value="6.0" oninput="updateRangeLabel('Screen_Time', 'screenVal', ' hrs')">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="slider-label-row">
+                            <label for="Work_Study_Hours">Work / Study Hours (Daily) <span class="required">*</span></label>
+                            <span class="slider-val" id="workVal">8.0 hrs</span>
+                        </div>
+                        <input type="range" id="Work_Study_Hours" name="Work_Study_Hours" class="form-range" min="1.0" max="16.0" step="0.5" value="8.0" oninput="updateRangeLabel('Work_Study_Hours', 'workVal', ' hrs')">
+                    </div>
+
+                    <div class="form-group col-span-2">
+                        <label for="Meal_Regularity">Meal Routine & Timing <span class="required">*</span></label>
+                        <div class="radio-pill-group">
+                            <label class="radio-pill">
+                                <input type="radio" name="Meal_Regularity" value="Regular" checked>
+                                <span><i class="fa-solid fa-clock"></i> Regular (Fixed Meal Windows)</span>
+                            </label>
+                            <label class="radio-pill">
+                                <input type="radio" name="Meal_Regularity" value="Moderate">
+                                <span><i class="fa-solid fa-arrows-split-up-and-left"></i> Moderate (Occasional Skipping)</span>
+                            </label>
+                            <label class="radio-pill">
+                                <input type="radio" name="Meal_Regularity" value="Irregular">
+                                <span><i class="fa-solid fa-shuffle"></i> Irregular (Frequent Skipping/Late Eating)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Mental & Emotional Wellness -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-step-badge">4</div>
+                    <div class="form-step-title">
+                        <h3>Mental & Emotional Equilibrium</h3>
+                        <p>Subjective self-assessment of stress, mood, and daytime vitality</p>
+                    </div>
+                </div>
+                <div class="form-grid grid-1">
+                    <div class="form-group">
+                        <div class="slider-label-row">
+                            <label for="Stress_Level">Perceived Stress Level (1 = Serene, 10 = Severe Pressure) <span class="required">*</span></label>
+                            <span class="slider-val text-warning" id="stressVal">4 / 10</span>
+                        </div>
+                        <input type="range" id="Stress_Level" name="Stress_Level" class="form-range" min="1" max="10" step="1" value="4" oninput="updateRangeLabel('Stress_Level', 'stressVal', ' / 10')">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="slider-label-row">
+                            <label for="Mood_Level">General Mood Level (1 = Low / Disheartened, 10 = Joyful / Content) <span class="required">*</span></label>
+                            <span class="slider-val text-success" id="moodVal">7 / 10</span>
+                        </div>
+                        <input type="range" id="Mood_Level" name="Mood_Level" class="form-range" min="1" max="10" step="1" value="7" oninput="updateRangeLabel('Mood_Level', 'moodVal', ' / 10')">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="slider-label-row">
+                            <label for="Energy_Level">Daytime Energy Level (1 = Fatigued / Exhausted, 10 = Highly Energetic) <span class="required">*</span></label>
+                            <span class="slider-val text-teal" id="energyVal">7 / 10</span>
+                        </div>
+                        <input type="range" id="Energy_Level" name="Energy_Level" class="form-range" min="1" max="10" step="1" value="7" oninput="updateRangeLabel('Energy_Level', 'energyVal', ' / 10')">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 5: Substance Moderation & Lifestyle Concerns -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="form-step-badge">5</div>
+                    <div class="form-step-title">
+                        <h3>Substance Moderation & Health Concerns</h3>
+                        <p>Smoking, alcohol, caffeine intake patterns, and open-ended concerns</p>
+                    </div>
+                </div>
+                <div class="form-grid grid-3">
+                    <div class="form-group">
+                        <label for="Smoking">Smoking Status <span class="required">*</span></label>
+                        <select id="Smoking" name="Smoking" class="form-control" required>
+                            <option value="No" selected>No / Non-smoker</option>
+                            <option value="Occasional">Occasional / Social</option>
+                            <option value="Regular">Regular / Daily</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Alcohol">Alcohol Consumption <span class="required">*</span></label>
+                        <select id="Alcohol" name="Alcohol" class="form-control" required>
+                            <option value="No" selected>No / Non-drinker</option>
+                            <option value="Occasional">Occasional / Social</option>
+                            <option value="Regular">Regular (3+ times/week)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Caffeine">Caffeine Intake <span class="required">*</span></label>
+                        <select id="Caffeine" name="Caffeine" class="form-control" required>
+                            <option value="Low (0-1 cups)">Low (0–1 cups/day)</option>
+                            <option value="Moderate (2-3 cups)" selected>Moderate (2–3 cups/day)</option>
+                            <option value="High (4+ cups)">High (4+ cups/day)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-span-3">
+                        <label for="Concerns">Existing Lifestyle Concerns or Specific Symptoms (Optional)</label>
+                        <textarea id="Concerns" name="Concerns" class="form-control" rows="2" placeholder="e.g. Occasional afternoon slump, lower back tightness after prolonged desk sitting..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submission Area -->
+            <div class="form-submit-card text-center">
+                <p class="mb-4 text-muted"><i class="fa-solid fa-lock"></i> Your data will be saved securely to <code>wellcare_users.csv</code> and processed by the AI predictive model.</p>
+                <button type="submit" class="btn btn-xl btn-primary" id="submitBtn">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Calculate Wellness & Run ML Prediction
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateRangeLabel(inputId, labelId, suffix) {
+    const val = document.getElementById(inputId).value;
+    const formatted = inputId === 'Steps' ? Number(val).toLocaleString() : val;
+    document.getElementById(labelId).innerText = formatted + suffix;
+}
+</script>
+{% endblock %}

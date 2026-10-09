@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+
+{% block title %}Population Analytics & ML Benchmark – WellCare AI{% endblock %}
+
+{% block content %}
+<div class="container py-8">
+    <!-- Header with Action Buttons -->
+    <div class="dashboard-header-flex mb-8">
+        <div>
+            <span class="section-tag">Population Health & Data Science</span>
+            <h1 class="page-title">Analytics & Machine Learning Dashboard</h1>
+            <p class="page-subtitle">Multi-user epidemiological insights, aggregate wellness metrics, and ML algorithm benchmarks.</p>
+        </div>
+        <div class="header-actions-group">
+            <form action="{{ url_for('retrain') }}" method="POST" class="inline-form">
+                <button type="submit" class="btn btn-primary" title="Retrain and evaluate all 4 classifiers on available dataset">
+                    <i class="fa-solid fa-arrows-rotate"></i> Retrain ML Models
+                </button>
+            </form>
+            <form action="{{ url_for('seed_demo') }}" method="POST" class="inline-form">
+                <button type="submit" class="btn btn-outline" title="Populate 60 synthetic wellness records for academic benchmarking">
+                    <i class="fa-solid fa-database"></i> Generate Demo Dataset (60 Records)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- KPI Summary Row -->
+    <div class="grid grid-4 mb-8">
+        <div class="glass-card kpi-stat-card">
+            <div class="kpi-icon-wrap bg-teal-soft">
+                <i class="fa-solid fa-users text-teal"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-number">{{ total_users }}</span>
+                <span class="kpi-label">Total Assessed Users</span>
+            </div>
+        </div>
+
+        <div class="glass-card kpi-stat-card">
+            <div class="kpi-icon-wrap bg-sky-soft">
+                <i class="fa-solid fa-chart-simple text-sky"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-number">{% if avg_score > 0 %}{{ avg_score }}<small>/100</small>{% else %}N/A{% endif %}</span>
+                <span class="kpi-label">Average Wellness Score</span>
+            </div>
+        </div>
+
+        <div class="glass-card kpi-stat-card">
+            <div class="kpi-icon-wrap bg-emerald-soft">
+                <i class="fa-solid fa-trophy text-emerald"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-number">{% if max_score > 0 %}{{ max_score }}<small>/100</small>{% else %}N/A{% endif %}</span>
+                <span class="kpi-label">Highest Score Recorded</span>
+            </div>
+        </div>
+
+        <div class="glass-card kpi-stat-card">
+            <div class="kpi-icon-wrap bg-amber-soft">
+                <i class="fa-solid fa-triangle-exclamation text-amber"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-number">{% if min_score > 0 %}{{ min_score }}<small>/100</small>{% else %}N/A{% endif %}</span>
+                <span class="kpi-label">Lowest Score Recorded</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Population Charts Grid -->
+    <div class="grid grid-2 mb-8">
+        <!-- Category Distribution Doughnut -->
+        <div class="glass-card chart-card">
+            <div class="card-header-flex mb-4">
+                <div>
+                    <h3>Wellness Category Distribution</h3>
+                    <p class="text-muted">Proportion of users across risk/wellness classifications</p>
+                </div>
+                <span class="badge badge-teal">Demographics</span>
+            </div>
+            <div class="chart-canvas-container">
+                <canvas id="categoryDoughnutChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Average Lifestyle Parameters -->
+        <div class="glass-card chart-card">
+            <div class="card-header-flex mb-4">
+                <div>
+                    <h3>Population Lifestyle Averages</h3>
+                    <p class="text-muted">Mean duration & volume across primary health factors</p>
+                </div>
+                <span class="badge badge-sky">Averages</span>
+            </div>
+            <div class="population-metrics-list">
+                <div class="pop-metric-row">
+                    <span><i class="fa-solid fa-bed text-teal"></i> Average Sleep Duration</span>
+                    <strong>{{ avg_sleep }} hrs / night</strong>
+                </div>
+                <div class="pop-metric-row">
+                    <span><i class="fa-solid fa-person-walking text-sky"></i> Average Daily Steps</span>
+                    <strong>{{ avg_steps }} steps / day</strong>
+                </div>
+                <div class="pop-metric-row">
+                    <span><i class="fa-solid fa-glass-water text-sky"></i> Average Water Intake</span>
+                    <strong>{{ avg_water }} L / day</strong>
+                </div>
+                <div class="pop-metric-row">
+                    <span><i class="fa-solid fa-laptop text-amber"></i> Average Screen Time</span>
+                    <strong>{{ avg_screen }} hrs / day</strong>
+                </div>
+                <div class="pop-metric-row">
+                    <span><i class="fa-solid fa-heart-pulse text-rose"></i> Average Stress Level</span>
+                    <strong>{{ avg_stress }} / 10</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Machine Learning Benchmark Section -->
+    <div class="glass-card mb-8">
+        <div class="card-header-flex mb-4">
+            <div>
+                <h2><i class="fa-solid fa-brain text-teal"></i> Machine Learning Model Benchmark & Comparison</h2>
+                <p class="text-muted">Evaluation of 4 classification algorithms on <code>wellcare_users.csv</code> training set (Last trained: <strong>{{ trained_at }}</strong>)</p>
+            </div>
+            {% if best_model_name %}
+            <span class="badge badge-success badge-lg"><i class="fa-solid fa-medal"></i> Best Model: {{ best_model_name }}</span>
+            {% else %}
+            <span class="badge badge-warning badge-lg"><i class="fa-solid fa-clock"></i> Minimum {{ min_required }} Records Required</span>
+            {% endif %}
+        </div>
+
+        {% if comparison_table and comparison_table|length > 0 %}
+        <div class="table-responsive mb-6">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Algorithm</th>
+                        <th>Accuracy (%)</th>
+                        <th>Precision (%)</th>
+                        <th>Recall (%)</th>
+                        <th>F1-Score (%)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in comparison_table %}
+                    <tr {% if m.Model == best_model_name %}class="table-row-highlight"{% endif %}>
+                        <td>
+                            <strong>{{ m.Model }}</strong>
+                            {% if m.Model == best_model_name %}
+                            <span class="badge badge-success ml-2"><i class="fa-solid fa-check"></i> Selected Best</span>
+                            {% endif %}
+                        </td>
+                        <td><strong>{{ m.Accuracy }}%</strong></td>
+                        <td>{{ m.Precision }}%</td>
+                        <td>{{ m.Recall }}%</td>
+                        <td><span class="badge badge-teal">{{ m.F1_Score }}%</span></td>
+                        <td>
+                            {% if m.Accuracy > 0 %}
+                            <span class="text-success"><i class="fa-solid fa-circle-check"></i> Converged</span>
+                            {% else %}
+                            <span class="text-danger"><i class="fa-solid fa-circle-xmark"></i> Failed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ML Performance Bar Chart -->
+        <div class="grid grid-2">
+            <div class="chart-canvas-container" style="height: 280px;">
+                <canvas id="modelComparisonChart"></canvas>
+            </div>
+
+            <!-- Feature Importance -->
+            <div class="feature-importance-box">
+                <h4><i class="fa-solid fa-chart-column text-teal"></i> Top Feature Importances (ML Explainability)</h4>
+                <p class="text-muted mb-3">Relative contribution of lifestyle features in predictive risk classification</p>
+                {% if feature_importances %}
+                <div class="importance-bars">
+                    {% for feat, imp in feature_importances.items() %}
+                    <div class="imp-row">
+                        <span class="imp-name">{{ feat }}</span>
+                        <div class="imp-bar-bg">
+                            <div class="imp-bar-fill" style="width: {{ imp }}%;"></div>
+                        </div>
+                        <span class="imp-val">{{ imp }}%</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted">Feature importance is displayed for tree-based best models (Random Forest / Gradient Boosting).</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% else %}
+        <div class="empty-state text-center py-8">
+            <div class="empty-icon text-muted mb-3"><i class="fa-solid fa-database fa-3x"></i></div>
+            <h3>More User Records Required for ML Training</h3>
+            <p class="text-muted max-w-md mx-auto mb-4">
+                At least {{ min_required }} diverse user records are required to train and benchmark classification algorithms.
+                You can either submit assessments individually or generate realistic demonstration records.
+            </p>
+            <form action="{{ url_for('seed_demo') }}" method="POST">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Load 60 Demo Records & Train Models
+                </button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Category Doughnut Chart
+    const catCounts = {{ cat_counts|tojson }};
+    const catLabels = Object.keys(catCounts);
+    const catValues = Object.values(catCounts);
+
+    if (catLabels.length > 0) {
+        const ctxDoughnut = document.getElementById('categoryDoughnutChart').getContext('2d');
+        new Chart(ctxDoughnut, {
+            type: 'doughnut',
+            data: {
+                labels: catLabels,
+                datasets: [{
+                    data: catValues,
+                    backgroundColor: ['#10B981', '#0D9488', '#F59E0B', '#F43F5E', '#0284C7'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+
+    // Model Comparison Chart
+    const comparisonData = {{ comparison_table|tojson }};
+    if (comparisonData && comparisonData.length > 0) {
+        const modelNames = comparisonData.map(m => m.Model);
+        const accuracies = comparisonData.map(m => m.Accuracy);
+        const f1Scores = comparisonData.map(m => m.F1_Score);
+
+        const ctxModel = document.getElementById('modelComparisonChart').getContext('2d');
+        new Chart(ctxModel, {
+            type: 'bar',
+            data: {
+                labels: modelNames,
+                datasets: [
+                    {
+                        label: 'Accuracy (%)',
+                        data: accuracies,
+                        backgroundColor: '#0D9488',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'F1-Score (%)',
+                        data: f1Scores,
+                        backgroundColor: '#0284C7',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { stepSize: 20 }
+                    }
+                },
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

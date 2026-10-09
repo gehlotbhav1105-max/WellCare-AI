@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}User History & Records – WellCare AI{% endblock %}
+
+{% block content %}
+<div class="container py-8">
+    <!-- Header -->
+    <div class="dashboard-header-flex mb-8">
+        <div>
+            <span class="section-tag">Persistent Multi-User Records</span>
+            <h1 class="page-title">User History & Assessments</h1>
+            <p class="page-subtitle">Inspect historical submissions stored in <code>wellcare_users.csv</code>, review individual profiles, or download PDF reports.</p>
+        </div>
+        <div class="header-actions-group">
+            <a href="{{ url_for('assessment') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> New Assessment
+            </a>
+        </div>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="glass-card mb-6 p-4">
+        <div class="filter-controls-row">
+            <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="historySearch" class="form-control" placeholder="Search by User ID, Name, or Category..." onkeyup="filterHistoryTable()">
+            </div>
+            <div class="filter-pill-group">
+                <button class="filter-pill active" onclick="filterByCategory('ALL', this)">All ({{ users|length }})</button>
+                <button class="filter-pill" onclick="filterByCategory('Excellent', this)">Excellent</button>
+                <button class="filter-pill" onclick="filterByCategory('Good', this)">Good</button>
+                <button class="filter-pill" onclick="filterByCategory('Moderate', this)">Moderate</button>
+                <button class="filter-pill" onclick="filterByCategory('Attention', this)">Needs Attention</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Table -->
+    <div class="glass-card">
+        {% if users and users|length > 0 %}
+        <div class="table-responsive">
+            <table class="data-table" id="historyTable">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Name</th>
+                        <th>Age / Gender</th>
+                        <th>Sleep / Steps</th>
+                        <th>Stress</th>
+                        <th>Wellness Score</th>
+                        <th>Category</th>
+                        <th>Assessed On</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr class="history-row" data-category="{{ u.Wellness_Category }}">
+                        <td><strong>{{ u.User_ID }}</strong></td>
+                        <td>{{ u.Name }}</td>
+                        <td>{{ u.Age }}y &bull; {{ u.Gender }}</td>
+                        <td>{{ u.Sleep_Hours }}h &bull; {{ u.Steps }} steps</td>
+                        <td>
+                            <span class="badge {% if u.Stress_Level|int <= 3 %}badge-success{% elif u.Stress_Level|int <= 6 %}badge-warning{% else %}badge-danger{% endif %}">
+                                {{ u.Stress_Level }}/10
+                            </span>
+                        </td>
+                        <td>
+                            <span class="score-pill {% if u.Wellness_Score|float >= 85 %}score-pill-excellent{% elif u.Wellness_Score|float >= 70 %}score-pill-good{% elif u.Wellness_Score|float >= 50 %}score-pill-moderate{% else %}score-pill-attention{% endif %}">
+                                {{ u.Wellness_Score }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if 'Excellent' in u.Wellness_Category %}badge-success{% elif 'Good' in u.Wellness_Category %}badge-teal{% elif 'Moderate' in u.Wellness_Category %}badge-warning{% else %}badge-danger{% endif %}">
+                                {{ u.Wellness_Category }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">{{ u.Timestamp }}</small></td>
+                        <td class="text-right">
+                            <div class="action-buttons-group">
+                                <a href="{{ url_for('view_result', user_id=u.User_ID) }}" class="btn btn-xs btn-outline" title="View AI Prediction Profile">
+                                    <i class="fa-solid fa-eye"></i> View
+                                </a>
+                                <a href="{{ url_for('download_report', user_id=u.User_ID) }}" class="btn btn-xs btn-rose" title="Download PDF Report">
+                                    <i class="fa-solid fa-file-pdf"></i> PDF
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state text-center py-12">
+            <div class="empty-icon text-muted mb-4"><i class="fa-solid fa-users-slash fa-3x"></i></div>
+            <h3>No User Records Found</h3>
+            <p class="text-muted max-w-md mx-auto mb-6">
+                <code>wellcare_users.csv</code> is currently empty. Complete your first wellness assessment or generate sample records.
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('assessment') }}" class="btn btn-primary">
+                    <i class="fa-solid fa-play"></i> Start First Assessment
+                </a>
+                <form action="{{ url_for('seed_demo') }}" method="POST" class="inline-form">
+                    <button type="submit" class="btn btn-outline">
+                        <i class="fa-solid fa-database"></i> Generate Demo Records
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterHistoryTable() {
+    const searchVal = document.getElementById('historySearch').value.toLowerCase();
+    const rows = document.querySelectorAll('.history-row');
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(searchVal) ? '' : 'none';
+    });
+}
+
+function filterByCategory(cat, btnElement) {
+    document.querySelectorAll('.filter-pill').forEach(b => b.classList.remove('active'));
+    btnElement.classList.add('active');
+
+    const rows = document.querySelectorAll('.history-row');
+    rows.forEach(row => {
+        const rowCat = row.getAttribute('data-category') || '';
+        if (cat === 'ALL' || rowCat.toLowerCase().includes(cat.toLowerCase())) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

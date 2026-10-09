@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}WellCare AI – Intelligent Personal Wellness Monitoring System{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container hero-container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fa-solid fa-sparkles"></i> Academic B.Tech AI/ML Project
+            </div>
+            <h1 class="hero-title">
+                Intelligent Personal <span class="gradient-text">Wellness Monitoring</span> & Prediction
+            </h1>
+            <p class="hero-description">
+                WellCare AI transforms personal lifestyle, physical activity, sleep, and emotional markers into transparent wellness scoring and predictive health-risk categorization using multi-algorithm Machine Learning.
+            </p>
+            <div class="hero-actions">
+                <a href="{{ url_for('assessment') }}" class="btn btn-lg btn-primary">
+                    <i class="fa-solid fa-clipboard-check"></i> Start Wellness Assessment
+                </a>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-lg btn-outline">
+                    <i class="fa-solid fa-chart-line"></i> View Population Dashboard
+                </a>
+            </div>
+            <div class="hero-kpis">
+                <div class="hero-kpi-item">
+                    <span class="hero-kpi-val">{{ total_users }}</span>
+                    <span class="hero-kpi-lbl">Assessed Users</span>
+                </div>
+                <div class="hero-kpi-item">
+                    <span class="hero-kpi-val">{% if avg_score > 0 %}{{ avg_score }}<small>/100</small>{% else %}N/A{% endif %}</span>
+                    <span class="hero-kpi-lbl">Avg Wellness Score</span>
+                </div>
+                <div class="hero-kpi-item">
+                    <span class="hero-kpi-val"><i class="fa-solid fa-brain"></i> 4</span>
+                    <span class="hero-kpi-lbl">ML Benchmark Models</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="glass-card hero-preview-card">
+                <div class="card-header-flex">
+                    <div class="status-indicator online"></div>
+                    <span class="preview-title">Real-Time Scoring Engine</span>
+                    <span class="badge badge-accent">Scikit-Learn ML</span>
+                </div>
+                <div class="hero-score-ring">
+                    <div class="score-circle-outer">
+                        <div class="score-circle-inner">
+                            <span class="score-number">84</span>
+                            <span class="score-label">Wellness Index</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="preview-category">
+                    <span class="badge badge-success">Good Wellness Category</span>
+                </div>
+                <div class="preview-factors">
+                    <div class="preview-factor-row">
+                        <span><i class="fa-solid fa-bed text-teal"></i> Sleep Optimization</span>
+                        <span class="text-success">Optimal (7.5h)</span>
+                    </div>
+                    <div class="preview-factor-row">
+                        <span><i class="fa-solid fa-person-walking text-sky"></i> Physical Activity</span>
+                        <span class="text-success">8,400 steps</span>
+                    </div>
+                    <div class="preview-factor-row">
+                        <span><i class="fa-solid fa-heart-pulse text-amber"></i> Stress Resilience</span>
+                        <span class="text-warning">Moderate (4/10)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Core System Pillars -->
+<section class="section bg-alt">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="section-tag">Holistic Health Dimensions</span>
+            <h2>Multi-Dimensional Lifestyle Evaluation</h2>
+            <p>Our scoring engine rigorously computes wellness across five foundational health pillars.</p>
+        </div>
+
+        <div class="grid grid-3">
+            <div class="feature-card">
+                <div class="feature-icon bg-teal-soft">
+                    <i class="fa-solid fa-person-running text-teal"></i>
+                </div>
+                <h3>Physical Wellness</h3>
+                <p>Monitors daily step volume, exercise duration, weekly frequency, and BMI index to track cardiovascular vitality.</p>
+                <div class="feature-footer">
+                    <span class="weight-badge">Weight: 25%</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon bg-sky-soft">
+                    <i class="fa-solid fa-moon text-sky"></i>
+                </div>
+                <h3>Sleep & Circadian Rhythm</h3>
+                <p>Evaluates nocturnal sleep duration against recommended healthy targets to promote cellular restoration.</p>
+                <div class="feature-footer">
+                    <span class="weight-badge">Weight: 20%</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon bg-amber-soft">
+                    <i class="fa-solid fa-glass-water text-amber"></i>
+                </div>
+                <h3>Lifestyle & Hydration</h3>
+                <p>Tracks fluid intake, digital screen time exposure, and work/study balance to avoid burnout and strain.</p>
+                <div class="feature-footer">
+                    <span class="weight-badge">Weight: 20%</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon bg-rose-soft">
+                    <i class="fa-solid fa-brain text-rose"></i>
+                </div>
+                <h3>Mental & Emotional Wellness</h3>
+                <p>Quantifies perceived stress, daily emotional mood, and subjective energy levels for holistic mental equilibrium.</p>
+                <div class="feature-footer">
+                    <span class="weight-badge">Weight: 20%</span>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon bg-indigo-soft">
+                    <i class="fa-solid fa-apple-whole text-indigo"></i>
+                </div>
+                <h3>Habits & Nutritional Rhythm</h3>
+                <p>Assesses meal regularity, caffeine consumption, smoking status, and alcohol moderation.</p>
+                <div class="feature-footer">
+                    <span class="weight-badge">Weight: 15%</span>
+                </div>
+            </div>
+
+            <div class="feature-card highlight-card">
+                <div class="feature-icon bg-emerald-soft">
+                    <i class="fa-solid fa-file-pdf text-emerald"></i>
+                </div>
+                <h3>ReportLab PDF Reports</h3>
+                <p>Generates downloadable, clinical-grade wellness reports formatted with demographic charts and custom advice.</p>
+                <div class="feature-footer">
+                    <a href="{{ url_for('assessment') }}" class="link-arrow">Generate Yours <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Machine Learning Architecture Pipeline -->
+<section class="section">
+    <div class="container">
+        <div class="section-header text-center">
+            <span class="section-tag">Machine Learning Workflow</span>
+            <h2>Automated Data-to-Prediction Pipeline</h2>
+            <p>WellCare AI incorporates a fully autonomous, transparent data science and machine learning lifecycle.</p>
+        </div>
+
+        <div class="workflow-grid">
+            <div class="workflow-step">
+                <div class="step-number">01</div>
+                <div class="step-icon"><i class="fa-solid fa-keyboard"></i></div>
+                <h4>Dynamic Input</h4>
+                <p>Multi-user input form captures 18 physiological & lifestyle markers without pre-existing data requirements.</p>
+            </div>
+            <div class="workflow-arrow"><i class="fa-solid fa-angle-right"></i></div>
+
+            <div class="workflow-step">
+                <div class="step-number">02</div>
+                <div class="step-icon"><i class="fa-solid fa-database"></i></div>
+                <h4>CSV Storage</h4>
+                <p>Thread-safe append to <code>wellcare_users.csv</code>, preserving multi-user history and generating unique IDs.</p>
+            </div>
+            <div class="workflow-arrow"><i class="fa-solid fa-angle-right"></i></div>
+
+            <div class="workflow-step">
+                <div class="step-number">03</div>
+                <div class="step-icon"><i class="fa-solid fa-filter"></i></div>
+                <h4>Preprocessing</h4>
+                <p>ColumnTransformers scale numerical values and encode categorical attributes while stripping PII fields.</p>
+            </div>
+            <div class="workflow-arrow"><i class="fa-solid fa-angle-right"></i></div>
+
+            <div class="workflow-step">
+                <div class="step-number">04</div>
+                <div class="step-icon"><i class="fa-solid fa-microchip"></i></div>
+                <h4>4-Model Benchmark</h4>
+                <p>Trains Logistic Regression, Decision Tree, Random Forest, & Gradient Boosting with F1 evaluation.</p>
+            </div>
+            <div class="workflow-arrow"><i class="fa-solid fa-angle-right"></i></div>
+
+            <div class="workflow-step">
+                <div class="step-number">05</div>
+                <div class="step-icon"><i class="fa-solid fa-square-poll-vertical"></i></div>
+                <h4>Report & Action</h4>
+                <p>Predicts category, calculates confidence, highlights key drivers, and provides rule-based recommendations.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="cta-section">
+    <div class="container cta-container">
+        <div class="cta-content">
+            <h2>Ready to Check Your Personal Wellness Score?</h2>
+            <p>Take our quick 2-minute assessment to unlock personalized lifestyle insights and download your wellness PDF report.</p>
+        </div>
+        <div class="cta-buttons">
+            <a href="{{ url_for('assessment') }}" class="btn btn-lg btn-white">
+                <i class="fa-solid fa-play"></i> Start Assessment Now
+            </a>
+            <a href="{{ url_for('history') }}" class="btn btn-lg btn-translucent">
+                <i class="fa-solid fa-users"></i> View Past Users
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}
